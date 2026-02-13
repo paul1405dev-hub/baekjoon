@@ -106,7 +106,16 @@ def main():
             if target_dir is None:
                 target_dir = UNSORTED_DIR
 
-            target_path = os.path.join(target_dir, f"{pid}.c")
+            # 원래 파일 이름에서 제목 추출 (확장자 제거)
+            safe_name = os.path.splitext(f)[0]
+
+            # 최종 이름: 번호_문제이름.c
+            target_path = os.path.join(target_dir, f"{pid}_{safe_name}.c")
+
+            # 이미 있으면 덮어쓰기
+            if os.path.exists(target_path):
+                os.remove(target_path)
+
 
             os.makedirs(target_dir, exist_ok=True)
             shutil.move(full, target_path)
