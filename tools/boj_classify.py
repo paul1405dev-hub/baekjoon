@@ -15,11 +15,28 @@ for d in CLASS_DIRS.values():
 os.makedirs(UNSORTED_DIR, exist_ok=True)
 
 def fetch_class_problem_ids(class_no: int) -> set[int]:
-    url = f"https://solved.ac/class/{class_no}?page=1"
-    req = urllib.request.Request(
-    url,
-    headers={"User-Agent": "Mozilla/5.0"}
-)
+    """
+    solved.ac/class/{n} 페이지에서 BOJ 문제 ID를 긁어오기.
+    GitHub Actions에서 403을 피하기 위해 User-Agent를 넣는다.
+    """
+    def get(url: str) -> str:
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        return urllib.request.urlopen(req).read().decode("utf-8", errors="ignore")
+
+    ids: set[int] = set()
+
+    # 1페이지부터 여러 페이지를 시도 (빈 페이지면 중단)
+    for page in range(1, 30):
+        url = f"https://solved.ac/class/{class_no}?page={page}"
+        html = get(url)
+
+        found = set(map(int, re.findall(r"acmicpc\.net/problem/(\d+)", html)))
+        if not found:
+            break
+        ids |= found
+
+    return ids
+
 html = urllib.request.urlopen(req).read().decode("utf-8", errors="ignore")
 
 
