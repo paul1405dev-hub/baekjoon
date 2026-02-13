@@ -4,9 +4,11 @@ import shutil
 import urllib.request
 
 ROOT = os.getcwd()
-BOJ_ROOT = os.path.join(ROOT, "백준")  # BaekjoonHub 루트 폴더명
+BOJ_ROOT = os.path.join(ROOT, "백준")  # BaekjoonHub 폴더 이름
 
 MAX_CLASS = 6
+
+# Class 폴더 준비
 CLASS_DIRS = {i: os.path.join(ROOT, f"Class{i}") for i in range(1, MAX_CLASS + 1)}
 UNSORTED_DIR = os.path.join(ROOT, "Unsorted")
 
@@ -14,18 +16,18 @@ for d in CLASS_DIRS.values():
     os.makedirs(d, exist_ok=True)
 os.makedirs(UNSORTED_DIR, exist_ok=True)
 
-def fetch_class_problem_ids(class_no: int) -> set[int]:
-    """
-    solved.ac/class/{n} 페이지에서 BOJ 문제 ID를 긁어오기.
-    GitHub Actions에서 403을 피하기 위해 User-Agent를 넣는다.
-    """
-    def get(url: str) -> str:
-        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+
+# ---------- solved.ac에서 class 문제 목록 가져오기 ----------
+def fetch_class_problem_ids(class_no):
+    def get(url):
+        req = urllib.request.Request(
+            url,
+            headers={"User-Agent": "Mozilla/5.0"}
+        )
         return urllib.request.urlopen(req).read().decode("utf-8", errors="ignore")
 
-    ids: set[int] = set()
+    ids = set()
 
-    # 1페이지부터 여러 페이지를 시도 (빈 페이지면 중단)
     for page in range(1, 30):
         url = f"https://solved.ac/class/{class_no}?page={page}"
         html = get(url)
@@ -33,42 +35,31 @@ def fetch_class_problem_ids(class_no: int) -> set[int]:
         found = set(map(int, re.findall(r"acmicpc\.net/problem/(\d+)", html)))
         if not found:
             break
+
         ids |= found
 
     return ids
 
-html = urllib.request.urlopen(req).read().decode("utf-8", errors="ignore")
 
-
-    ids = set(map(int, re.findall(r"acmicpc\.net/problem/(\d+)", html)))
-
-    for page in range(2, 20):  # 넉넉하게
-        url_p = f"https://solved.ac/class/{class_no}?page={page}"
-        req_p = urllib.request.Request(
-    url_p,
-    headers={"User-Agent": "Mozilla/5.0"}
-)
-html_p = urllib.request.urlopen(req_p).read().decode("utf-8", errors="ignore")
-
-        found = set(map(int, re.findall(r"acmicpc\.net/problem/(\d+)", html_p)))
-        if not found:
-            break
-        ids |= found
-
-    return ids
-
-def extract_problem_id(path: str) -> int | None:
+# ---------- 문제 번호 추출 ----------
+def extract_problem_id(path):
     m = re.search(r"(\d{3,6})", path)
     return int(m.group(1)) if m else None
 
-def is_c_solution(filename: str) -> bool:
+
+# ---------- .c 파일인지 확인 ----------
+def is_c_solution(filename):
     return filename.lower().endswith(".c")
 
-def remove_if_exists(p: str):
+
+# ---------- 파일이 있으면 삭제 ----------
+def remove_if_exists(p):
     if os.path.isfile(p):
         os.remove(p)
 
-def delete_empty_dirs(start_dir: str):
+
+# ---------- 빈 폴더 삭제 ----------
+def delete_empty_dirs(start_dir):
     for root, dirs, files in os.walk(start_dir, topdown=False):
         if not dirs and not files:
             try:
@@ -76,18 +67,22 @@ def delete_empty_dirs(start_dir: str):
             except OSError:
                 pass
 
+
+# ---------- 메인 ----------
 def main():
     if not os.path.isdir(BOJ_ROOT):
-        print(f"[skip] '{BOJ_ROOT}' 폴더가 없음. BOJ_ROOT를 실제 폴더명으로 수정해줘.")
+        print(f"[skip] '{BOJ_ROOT}' 폴더 없음")
         return
 
-    print("[1/3] Fetch solved.ac class lists...")
-    class_map: dict[int, set[int]] = {}
+    print("[1/3] Fetch class lists...")
+
+    class_map = {}
     for c in range(1, MAX_CLASS + 1):
         class_map[c] = fetch_class_problem_ids(c)
-        print(f"  - Class{c}: {len(class_map[c])} problems")
+        print(f"Class{c}: {len(class_map[c])} problems")
 
-    print("[2/3] Scan solutions under BOJ root...")
+    print("[2/3] Move solutions...")
+
     moved = 0
 
     for root, dirs, files in os.walk(BOJ_ROOT):
@@ -97,29 +92,32 @@ def main():
 
             full = os.path.join(root, f)
             pid = extract_problem_id(full)
+
             if pid is None:
                 continue
 
             target_dir = None
+
             for c in range(1, MAX_CLASS + 1):
                 if pid in class_map[c]:
                     target_dir = CLASS_DIRS[c]
                     break
 
             if target_dir is None:
-                # 클래스 목록에 없으면 Unsorted로 보냄(원하면 continue로 바꿔도 됨)
                 target_dir = UNSORTED_DIR
 
             target_path = os.path.join(target_dir, f"{pid}.c")
+
+            os.makedirs(target_dir, exist_ok=True)
             shutil.move(full, target_path)
             moved += 1
 
-            # 문제 폴더의 README는 필요 없으면 삭제
             remove_if_exists(os.path.join(root, "README.md"))
 
-    print(f"[3/3] Moved {moved} file(s). Cleanup empty dirs...")
+    print(f"[3/3] moved: {moved}")
     delete_empty_dirs(BOJ_ROOT)
     print("Done.")
+
 
 if __name__ == "__main__":
     main()
