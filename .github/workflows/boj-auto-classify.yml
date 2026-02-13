@@ -1,0 +1,28 @@
+name: Auto classify BaekjoonHub solutions into Class folders
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: write
+
+jobs:
+  classify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Run classifier
+        run: python tools/boj_classify.py
+
+      - name: Auto commit changes
+        uses: step-security/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: auto move solutions to Class folders"
