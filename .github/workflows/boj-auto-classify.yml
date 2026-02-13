@@ -22,7 +22,14 @@ jobs:
       - name: Run classifier
         run: python tools/boj_classify.py
 
-      - name: Auto commit changes
-        uses: step-security/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: auto move solutions to Class folders"
+      - name: Commit & push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "chore: auto move solutions to Class folders"
+          git push
