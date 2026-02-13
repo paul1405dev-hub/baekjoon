@@ -16,13 +16,23 @@ os.makedirs(UNSORTED_DIR, exist_ok=True)
 
 def fetch_class_problem_ids(class_no: int) -> set[int]:
     url = f"https://solved.ac/class/{class_no}?page=1"
-    html = urllib.request.urlopen(url).read().decode("utf-8", errors="ignore")
+    req = urllib.request.Request(
+    url,
+    headers={"User-Agent": "Mozilla/5.0"}
+)
+html = urllib.request.urlopen(req).read().decode("utf-8", errors="ignore")
+
 
     ids = set(map(int, re.findall(r"acmicpc\.net/problem/(\d+)", html)))
 
     for page in range(2, 20):  # 넉넉하게
         url_p = f"https://solved.ac/class/{class_no}?page={page}"
-        html_p = urllib.request.urlopen(url_p).read().decode("utf-8", errors="ignore")
+        req_p = urllib.request.Request(
+    url_p,
+    headers={"User-Agent": "Mozilla/5.0"}
+)
+html_p = urllib.request.urlopen(req_p).read().decode("utf-8", errors="ignore")
+
         found = set(map(int, re.findall(r"acmicpc\.net/problem/(\d+)", html_p)))
         if not found:
             break
