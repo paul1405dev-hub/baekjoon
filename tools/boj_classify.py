@@ -49,7 +49,7 @@ def extract_problem_id(path):
 
 # ---------- .c 파일인지 확인 ----------
 def is_c_solution(filename):
-    return filename.lower().endswith(".c")
+    return filename.lower().endswith((".c", ".cpp"))
 
 
 # ---------- 파일이 있으면 삭제 ----------
@@ -87,7 +87,7 @@ def main():
 
     for root, dirs, files in os.walk(BOJ_ROOT):
         for f in files:
-            if not is_c_solution(f):
+            if not is_solution(f):
                 continue
 
             full = os.path.join(root, f)
