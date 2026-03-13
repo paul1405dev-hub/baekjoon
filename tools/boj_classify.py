@@ -108,11 +108,12 @@ def main():
 
             # 원래 파일 이름에서 제목 추출 (확장자 제거)
             safe_name = os.path.splitext(f)[0]
+            safe_name = safe_name.replace(" ", "").replace(" ", "")
 
             # 최종 이름: 번호_문제이름.c
             name, ext = os.path.splitext(f)
 
-            safe_name = name.replace(" ", "").replace(" ", "")
+            safe_name = name
             target_path = os.path.join(target_dir, f"{pid}_{safe_name}{ext}")
 
             # 이미 있으면 덮어쓰기
