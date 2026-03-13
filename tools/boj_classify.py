@@ -49,7 +49,7 @@ def extract_problem_id(path):
 
 # ---------- .c 파일인지 확인 ----------
 def is_solution(filename):
-    return filename.lower().endswith((".c", ".cpp"))
+    return filename.lower().endswith((".c", ".cpp", ".cc"))
 
 
 # ---------- 파일이 있으면 삭제 ----------
