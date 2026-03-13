@@ -112,8 +112,7 @@ def main():
 
             # 최종 이름: 번호_문제이름.c
             name, ext = os.path.splitext(f)
-
-            safe_name = name
+            safe_name = name.replace(" ", "").replace(" ", "")
             target_path = os.path.join(target_dir, f"{pid}_{safe_name}{ext}")
 
             # 이미 있으면 덮어쓰기
