@@ -110,7 +110,10 @@ def main():
             safe_name = os.path.splitext(f)[0]
 
             # 최종 이름: 번호_문제이름.c
-            target_path = os.path.join(target_dir, f"{pid}_{safe_name}.c")
+            tname, ext = os.path.splitext(f)
+
+            safe_name = name
+            target_path = os.path.join(target_dir, f"{pid}_{safe_name}{ext}")
 
             # 이미 있으면 덮어쓰기
             if os.path.exists(target_path):
