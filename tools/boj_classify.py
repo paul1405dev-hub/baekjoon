@@ -48,7 +48,7 @@ def extract_problem_id(path):
 
 
 # ---------- .c 파일인지 확인 ----------
-def is_c_solution(filename):
+def is_solution(filename):
     return filename.lower().endswith((".c", ".cpp"))
 
 
@@ -110,7 +110,7 @@ def main():
             safe_name = os.path.splitext(f)[0]
 
             # 최종 이름: 번호_문제이름.c
-            tname, ext = os.path.splitext(f)
+            name, ext = os.path.splitext(f)
 
             safe_name = name
             target_path = os.path.join(target_dir, f"{pid}_{safe_name}{ext}")
